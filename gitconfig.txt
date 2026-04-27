@@ -1,0 +1,4 @@
+git config --global user.name gallojunior
+git config --global user.email gallojunior@gmail.com
+
+dotnet new webapi -o GStore.API --use-controllers
