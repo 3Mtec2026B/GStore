@@ -48,7 +48,13 @@ public class SeedUsuario
         #endregion
 
         #region Usuário Perfil
-        
+        List<IdentityUserRole<string>> userRoles = [
+            new() {
+                UserId = usuarios[0].Id,
+                RoleId = perfis[0].Id
+            }
+        ];
+        builder.Entity<IdentityUserRole<string>>().HasData(userRoles);
         #endregion
     }
 }
