@@ -12,8 +12,8 @@ public class SeedProduto
             new() {
                 Id = 1,
                 CategoriaId = 1,
-                Nome = "",
-                Descricao = @"",
+                Nome = "Teste",
+                Descricao = @"Teste",
                 ValorCusto = 1,
                 ValorVenda = 1.99m,
                 Qtde = 0,
