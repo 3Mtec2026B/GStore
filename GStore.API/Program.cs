@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using Scalar.AspNetCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,8 +47,8 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-   options.TokenValidationParameters = new()
-   {
+    options.TokenValidationParameters = new()
+    {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
@@ -57,7 +56,7 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!))
-   };
+    };
 });
 
 // Configuração do serviço de autorização
@@ -65,47 +64,37 @@ builder.Services.AddAuthorization();
 
 // Configuração dos serviços customizados
 
-
 // Configuração do CORS
 builder.Services.AddCors(options =>
 {
-   options.AddPolicy("AllowAll", policy =>
-   {
-       policy.AllowAnyOrigin()
-             .AllowAnyMethod()
-             .AllowAnyHeader();
-   });
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
 });
 
 builder.Services.AddControllers();
 
-// Configuração do Scalar
-builder.Services.AddOpenApi();
-// builder.Services.AddOpenApi(options =>
-// {
-//     options.AddDocumentTransformer((document, context, cancellationToken) =>
-//     {
-//         document.Info = new OpenApiInfo
-//         {
-//             Title = "GStore API",
-//             Version = "v1",
-//             Description = "API de fornecimento de dados de produtos"
-//         };
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "GStore API",
+        Version = "v1",
+        Description = "API de fornecimento de dados de produtos"
+    });
 
-//         document.Components ??= new OpenApiComponents();
-
-//         document.Components.SecuritySchemes["Bearer"] =
-//             new OpenApiSecurityScheme
-//             {
-//                 Type = SecuritySchemeType.Http,
-//                 Scheme = "bearer",
-//                 BearerFormat = "JWT",
-//                 Description = "Informe o token JWT"
-//             };
-
-//         return Task.CompletedTask;
-//     });
-// });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Cabeçalho da Autorização JWT. Exemplo: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+    });
+});
 
 
 var app = builder.Build();
@@ -120,14 +109,17 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "GStore.API v1");
+        c.RoutePrefix = string.Empty;
+    });
 }
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles(); // Importante para gerenciamento de imagens no backend
+app.UseStaticFiles();
 
 app.UseCors("AllowAll");
 
